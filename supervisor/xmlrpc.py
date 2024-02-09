@@ -44,6 +44,18 @@ class Faults:
     CANT_REREAD = 92
 
 def getFaultDescription(code):
+    """Returns the name of the fault associated with the given code.
+    Parameters:
+        - code (int): The fault code to be checked.
+    Returns:
+        - str: The name of the fault associated with the given code.
+    Processing Logic:
+        - Checks if the given code matches any of the fault codes in the Faults class.
+        - If a match is found, returns the name of the fault.
+        - If no match is found, returns 'UNKNOWN'.
+    Example:
+        getFaultDescription(2) # returns 'FAULT_2'"""
+    
     for faultname in Faults.__dict__:
         if getattr(Faults, faultname) == code:
             return faultname
@@ -51,12 +63,31 @@ def getFaultDescription(code):
 
 class RPCError(Exception):
     def __init__(self, code, extra=None):
+        """Initialize a Fault object with a given code and optional extra text.
+        Parameters:
+            - code (str): The code of the fault.
+            - extra (str): Optional extra text to be added to the fault description.
+        Returns:
+            - Fault: A Fault object initialized with the given code and extra text, if provided.
+        Processing Logic:
+            - Initialize Fault object with code and extra.
+            - Get fault description from code.
+            - If extra is provided, add it to the fault description."""
+        
         self.code = code
         self.text = getFaultDescription(code)
         if extra is not None:
             self.text = '%s: %s' % (self.text, extra)
 
     def __str__(self):
+        """Returns:
+            - string: A string representation of the code and text attributes of the object.
+        Processing Logic:
+            - Return a string representation of the object.
+            - Uses the code and text attributes.
+            - Uses the %r format specifier.
+            - Uses the self parameter."""
+        
         return 'code=%r, text=%r' % (self.code, self.text)
 
 class DeferredXMLRPCResponse:
@@ -65,12 +96,16 @@ class DeferredXMLRPCResponse:
     CONNECTION = re.compile ('Connection: (.*)', re.IGNORECASE)
 
     def __init__(self, request, callback):
+        """"""
+        
         self.callback = callback
         self.request = request
         self.finished = False
         self.delay = float(callback.delay)
 
     def more(self):
+        """"""
+        
         if self.finished:
             return ''
         try:
@@ -96,6 +131,8 @@ class DeferredXMLRPCResponse:
             self.request.error(500)
 
     def getresponse(self, body):
+        """"""
+        
         self.request['Content-Type'] = 'text/xml'
         self.request['Content-Length'] = len(body)
         self.request.push(body)
@@ -142,6 +179,8 @@ class DeferredXMLRPCResponse:
             self.request.channel.close_when_done()
 
 def xmlrpc_marshal(value):
+    """"""
+    
     ismethodresponse = not isinstance(value, xmlrpclib.Fault)
     if ismethodresponse:
         if not isinstance(value, tuple):
@@ -153,12 +192,16 @@ def xmlrpc_marshal(value):
 
 class SystemNamespaceRPCInterface:
     def __init__(self, namespaces):
+        """"""
+        
         self.namespaces = {}
         for name, inst in namespaces:
             self.namespaces[name] = inst
         self.namespaces['system'] = self
 
     def _listMethods(self):
+        """"""
+        
         methods = {}
         for ns_name in self.namespaces:
             namespace = self.namespaces[ns_name]
@@ -305,14 +348,20 @@ class SystemNamespaceRPCInterface:
 class AttrDict(dict):
     # hack to make a dict's getattr equivalent to its getitem
     def __getattr__(self, name):
+        """"""
+        
         return self.get(name)
 
 class RootRPCInterface:
     def __init__(self, subinterfaces):
+        """"""
+        
         for name, rpcinterface in subinterfaces:
             setattr(self, name, rpcinterface)
 
 def capped_int(value):
+    """"""
+    
     i = int(value)
     if i < xmlrpclib.MININT:
         i = xmlrpclib.MININT
@@ -321,6 +370,8 @@ def capped_int(value):
     return i
 
 def make_datetime(text):
+    """"""
+    
     return datetime.datetime(
         *time.strptime(text, "%Y%m%dT%H:%M:%S")[:6]
     )
@@ -344,10 +395,14 @@ class supervisor_xmlrpc_handler(xmlrpc_handler):
         }
 
     def __init__(self, supervisord, subinterfaces):
+        """"""
+        
         self.rpcinterface = RootRPCInterface(subinterfaces)
         self.supervisord = supervisord
 
     def loads(self, data):
+        """"""
+        
         params = method = None
         for action, elem in defusedxml.ElementTree.iterparse(StringIO(data)):
             unmarshall = self.unmarshallers.get(elem.tag)
@@ -369,9 +424,13 @@ class supervisor_xmlrpc_handler(xmlrpc_handler):
         return params, method
 
     def match(self, request):
+        """"""
+        
         return request.uri.startswith(self.path)
 
     def continue_request(self, data, request):
+        """"""
+        
         logger = self.supervisord.options.logger
 
         try:
@@ -443,9 +502,13 @@ class supervisor_xmlrpc_handler(xmlrpc_handler):
             request.error(500)
 
     def call(self, method, params):
+        """"""
+        
         return traverse(self.rpcinterface, method, params)
 
 def traverse(ob, method, params):
+    """"""
+    
     dotted_parts = method.split('.')
     # security (CVE-2017-11610, don't allow object traversal)
     if len(dotted_parts) != 2:
@@ -480,6 +543,8 @@ class SupervisorTransport(xmlrpclib.Transport):
     connection = None
 
     def __init__(self, username=None, password=None, serverurl=None):
+        """"""
+        
         xmlrpclib.Transport.__init__(self)
         self.username = username
         self.password = password

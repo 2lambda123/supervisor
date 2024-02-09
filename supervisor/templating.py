@@ -64,6 +64,18 @@ else:
 
 # replace element factory
 def Replace(text, structure=False):
+    """"Creates a _MeldElementInterface object with the given text and optional structure parameter."
+    Parameters:
+        - text (str): The text to be added to the _MeldElementInterface object.
+        - structure (bool): Optional parameter to specify if the text should be structured or not.
+    Returns:
+        - _MeldElementInterface: An object with the given text and structure, if specified.
+    Processing Logic:
+        - Creates a _MeldElementInterface object.
+        - Sets the text attribute to the given text.
+        - Sets the structure attribute to the given structure, if specified.
+        - Returns the created object."""
+    
     element = _MeldElementInterface(Replace, {})
     element.text = text
     element.structure = structure
@@ -71,6 +83,18 @@ def Replace(text, structure=False):
 
 class PyHelper:
     def findmeld(self, node, name, default=None):
+        """"Returns the element with the specified name from the given node, or the default value if not found."
+        Parameters:
+            - node (ElementTree.Element): The node to search within.
+            - name (str): The name of the element to find.
+            - default (ElementTree.Element, optional): The default value to return if the element is not found. Defaults to None.
+        Returns:
+            - ElementTree.Element: The element with the specified name, or the default value if not found.
+        Processing Logic:
+            - Search for the element with the specified name.
+            - If found, return the element.
+            - If not found, return the default value."""
+        
         iterator = self.getiterator(node)
         for element in iterator:
             val = element.attrib.get(_MELD_ID)
@@ -79,6 +103,18 @@ class PyHelper:
         return default
 
     def clone(self, node, parent=None):
+        """Clones a given node and its children, and appends it to the parent node if provided.
+        Parameters:
+            - node (Node): The node to be cloned.
+            - parent (Node, optional): The parent node to append the cloned node to. Defaults to None.
+        Returns:
+            - Node: The cloned node.
+        Processing Logic:
+            - Copies the tag and attributes of the given node.
+            - Sets the text, tail, and structure of the cloned node.
+            - Appends the cloned node to the parent node, if provided.
+            - Recursively clones all children of the given node and appends them to the cloned node."""
+        
         element = _MeldElementInterface(node.tag, node.attrib.copy())
         element.text = node.text
         element.tail = node.tail
@@ -92,6 +128,8 @@ class PyHelper:
         return element
 
     def _bfclone(self, nodes, parent):
+        """"""
+        
         L = []
         for node in nodes:
             element = _MeldElementInterface(node.tag, node.attrib.copy())
@@ -105,6 +143,8 @@ class PyHelper:
         parent._children = L
 
     def bfclone(self, node, parent=None):
+        """"""
+        
         element = _MeldElementInterface(node.tag, node.attrib.copy())
         element.text = node.text
         element.tail = node.tail
@@ -117,6 +157,8 @@ class PyHelper:
         return element
 
     def getiterator(self, node, tag=None):
+        """"""
+        
         nodes = []
         if tag == "*":
             tag = None
@@ -127,6 +169,8 @@ class PyHelper:
         return nodes
 
     def content(self, node, text, structure=False):
+        """"""
+        
         node.text = None
         replacenode = Replace(text, structure)
         replacenode.parent = node
@@ -168,46 +212,72 @@ class _MeldElementInterface:
 
     # overrides to reduce MRU lookups
     def __init__(self, tag, attrib):
+        """"""
+        
         self.tag = tag
         self.attrib = attrib
         self._children = []
 
     def __repr__(self):
+        """"""
+        
         return "<MeldElement %s at %x>" % (self.tag, id(self))
 
     def __len__(self):
+        """"""
+        
         return len(self._children)
 
     def __getitem__(self, index):
+        """"""
+        
         return self._children[index]
 
     def __getslice__(self, start, stop):
+        """"""
+        
         return self._children[start:stop]
 
     def getchildren(self):
+        """"""
+        
         return self._children
 
     def find(self, path):
+        """"""
+        
         return ElementPath.find(self, path)
 
     def findtext(self, path, default=None):
+        """"""
+        
         return ElementPath.findtext(self, path, default)
 
     def findall(self, path):
+        """"""
+        
         return ElementPath.findall(self, path)
 
     def clear(self):
+        """"""
+        
         self.attrib.clear()
         self._children = []
         self.text = self.tail = None
 
     def get(self, key, default=None):
+        """"""
+        
         return self.attrib.get(key, default)
 
     def set(self, key, value):
+        """"""
+        
         self.attrib[key] = value
 
     def keys(self):
+        """"""
+        
         return list(self.attrib.keys())
 
     def items(self):
