@@ -12,9 +12,7 @@ from xml.etree.ElementTree import (
     ElementPath,
     ProcessingInstruction,
     QName,
-    TreeBuilder,
-    XMLParser,
-    parse as et_parse
+    TreeBuilder
     )
 
 from supervisor.compat import (
@@ -27,6 +25,7 @@ from supervisor.compat import (
     as_bytes,
     as_string,
     )
+import defusedxml.ElementTree
 
 AUTOCLOSE = "p", "li", "tr", "th", "td", "head", "body"
 IGNOREEND = "img", "hr", "meta", "link", "br"
@@ -851,7 +850,7 @@ class HTMLXMLParser(HTMLParser):
         self.builder.end(Comment)
 
 def do_parse(source, parser):
-    root = et_parse(source, parser=parser).getroot()
+    root = defusedxml.ElementTree.parse(source, parser=parser).getroot()
     iterator = root.getiterator()
     for p in iterator:
         for c in p:
@@ -863,7 +862,7 @@ def parse_xml(source):
     html is true, use a parser that can resolve somewhat ambiguous
     HTML into XHTML.  Otherwise use a 'normal' parser only."""
     builder = MeldTreeBuilder()
-    parser = XMLParser(target=builder)
+    parser = defusedxml.ElementTree.XMLParser(target=builder)
     return do_parse(source, parser)
 
 def parse_html(source, encoding=None):
