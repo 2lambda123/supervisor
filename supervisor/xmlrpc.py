@@ -5,7 +5,6 @@ import sys
 import time
 import traceback
 import types
-from xml.etree.ElementTree import iterparse
 
 from supervisor.compat import xmlrpclib
 from supervisor.compat import StringIO
@@ -22,6 +21,7 @@ from supervisor.medusa.xmlrpc_handler import xmlrpc_handler
 from supervisor.medusa import producers
 
 from supervisor.http import NOT_DONE_YET
+import defusedxml.ElementTree
 
 class Faults:
     UNKNOWN_METHOD = 1
@@ -349,7 +349,7 @@ class supervisor_xmlrpc_handler(xmlrpc_handler):
 
     def loads(self, data):
         params = method = None
-        for action, elem in iterparse(StringIO(data)):
+        for action, elem in defusedxml.ElementTree.iterparse(StringIO(data)):
             unmarshall = self.unmarshallers.get(elem.tag)
             if unmarshall:
                 data = unmarshall(elem)
